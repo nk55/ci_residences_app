@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/advertisement.dart';
 import '../models/artisan.dart';
@@ -12,9 +11,6 @@ import '../widgets/residence_card.dart';
 import 'ads_screen.dart';
 import 'artisan_detail_screen.dart';
 import 'artisans_screen.dart';
-import 'dashboard_screen.dart';
-import 'favorites_screen.dart';
-import 'login_screen.dart';
 import 'residence_detail_screen.dart';
 import 'residences_screen.dart';
 
@@ -59,65 +55,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refreshData() async {
     setState(_loadAllData);
 
-    await Future.wait([
-      _futureResidences,
-      _futureArtisans,
-      _futureAds,
-    ]);
+    await Future.wait([_futureResidences, _futureArtisans, _futureAds]);
   }
 
-  Future<bool> _isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('is_logged_in') ?? false;
-  }
-
-  Future<void> _openProfileArea() async {
-    final loggedIn = await _isLoggedIn();
-    if (!mounted) return;
-
+  void _openPublish() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => loggedIn ? const DashboardScreen() : const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const AdsScreen()),
     );
   }
 
-  Future<void> _openPublish() async {
-    final loggedIn = await _isLoggedIn();
-    if (!mounted) return;
-
-    if (loggedIn) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Connecte-toi pour publier une annonce'),
-      ),
-    );
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
-  }
-
-  void _openFavorites() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const FavoritesScreen()),
-    );
-  }
-
-  List<T> _uniqueById<T>(
-    List<T> items,
-    int Function(T item) getId,
-  ) {
+  List<T> _uniqueById<T>(List<T> items, int Function(T item) getId) {
     final Map<int, T> map = <int, T>{};
 
     for (final T item in items) {
@@ -160,8 +108,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Residence? _pickFeaturedResidence(List<Residence> residences) {
     if (residences.isEmpty) return null;
 
-    final List<Residence> sponsored =
-        residences.where((Residence e) => e.isSponsored).toList();
+    final List<Residence> sponsored = residences
+        .where((Residence e) => e.isSponsored)
+        .toList();
 
     if (sponsored.isNotEmpty) return sponsored.first;
     return residences.first;
@@ -185,9 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openArtisanDetail(Artisan artisan) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ArtisanDetailScreen(artisan: artisan),
-      ),
+      MaterialPageRoute(builder: (_) => ArtisanDetailScreen(artisan: artisan)),
     );
   }
 
@@ -198,8 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final List<Advertisement> homeAds = activeAds
         .where(
-          (Advertisement item) =>
-              item.position.toLowerCase().trim() == 'home',
+          (Advertisement item) => item.position.toLowerCase().trim() == 'home',
         )
         .toList();
 
@@ -298,11 +244,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 16),
                           _fadeSlide(delay: 40, child: _buildHeroSection()),
                           const SizedBox(height: 22),
-                          _fadeSlide(delay: 80, child: _buildQuickAccess()),
-                          const SizedBox(height: 28),
-                          _fadeSlide(delay: 120, child: _buildResidencesSection()),
+                          _fadeSlide(
+                            delay: 120,
+                            child: _buildResidencesSection(),
+                          ),
                           const SizedBox(height: 30),
-                          _fadeSlide(delay: 160, child: _buildArtisansSection()),
+                          _fadeSlide(
+                            delay: 160,
+                            child: _buildArtisansSection(),
+                          ),
                           const SizedBox(height: 30),
                           _fadeSlide(delay: 200, child: _buildAdSection()),
                         ],
@@ -327,10 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final double offsetY = (1 - value) * 18;
         return Opacity(
           opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, offsetY),
-            child: child,
-          ),
+          child: Transform.translate(offset: Offset(0, offsetY), child: child),
         );
       },
     );
@@ -355,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Résidences, artisans et bonnes offres',
+          'Résidences, artisans et bonnes offres en Côte d’Ivoire',
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -370,37 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _headerAction({
-    required IconData icon,
-    required VoidCallback onTap,
-    bool filled = false,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Ink(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: filled ? _primarySoft : _surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: _line),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 14,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Icon(icon, color: _navy, size: 22),
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeroSection() {
     return Container(
       width: double.infinity,
@@ -410,10 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF132238),
-            Color(0xFF1D4ED8),
-          ],
+          colors: [Color(0xFF132238), Color(0xFF1D4ED8)],
         ),
         boxShadow: [
           BoxShadow(
@@ -462,13 +375,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   _glassChip(
                     icon: Icons.verified_outlined,
-                    label: 'Annonces visibles',
+                    label: 'Annonces disponibles',
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Text(
-                'Trouvez votre espace\nsans perdre de place.',
+                'Trouvez votre résidence\nsimplement et rapidement.',
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.playfairDisplay(
@@ -481,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Une présentation plus simple, plus jolie et mieux adaptée aux téléphones.',
+                'Découvrez des résidences disponibles, des artisans fiables et des offres près de chez vous.',
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
@@ -527,10 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _glassChip({
-    required IconData icon,
-    required String label,
-  }) {
+  Widget _glassChip({required IconData icon, required String label}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
@@ -594,11 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 7),
-              Icon(
-                icon,
-                size: 17,
-                color: filled ? _navy : Colors.white,
-              ),
+              Icon(icon, size: 17, color: filled ? _navy : Colors.white),
             ],
           ),
         ),
@@ -617,167 +523,6 @@ class _HomeScreenState extends State<HomeScreen> {
         color: _primary,
         letterSpacing: 1.3,
       ),
-    );
-  }
-
-  Widget _buildQuickAccess() {
-    final List<Map<String, dynamic>> items = [
-      {
-        'icon': Icons.apartment_rounded,
-        'title': 'Résidences',
-        'subtitle': 'Explorer',
-        'color1': const Color(0xFF315CF4),
-        'color2': const Color(0xFF6D8CFF),
-        'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ResidencesScreen()),
-          );
-        },
-      },
-      {
-        'icon': Icons.handyman_rounded,
-        'title': 'Artisans',
-        'subtitle': 'Trouver',
-        'color1': const Color(0xFF0E9F8B),
-        'color2': const Color(0xFF25C5B5),
-        'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ArtisansScreen()),
-          );
-        },
-      },
-      {
-        'icon': Icons.campaign_rounded,
-        'title': 'Offres',
-        'subtitle': 'Voir',
-        'color1': const Color(0xFFF59E0B),
-        'color2': const Color(0xFFFFC24B),
-        'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AdsScreen()),
-          );
-        },
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionEyebrow('Navigation'),
-        const SizedBox(height: 6),
-        Text(
-          'Accès rapide',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.inter(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: _text,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Une navigation simple, jolie et plus légère.',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.inter(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w500,
-            color: _subtext,
-            height: 1.45,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: items.map((Map<String, dynamic> item) {
-            final bool isLast = item == items.last;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: isLast ? 0 : 10),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(24),
-                    onTap: item['onTap'] as VoidCallback,
-                    child: Ink(
-                      padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
-                      decoration: BoxDecoration(
-                        color: _surface,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: _line),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 14,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 58,
-                            height: 58,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  item['color1'] as Color,
-                                  item['color2'] as Color,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (item['color1'] as Color).withOpacity(0.24),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              item['icon'] as IconData,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            item['title'] as String,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
-                              color: _text,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item['subtitle'] as String,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: _subtext,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 
@@ -870,10 +615,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildResidencesSection() {
     return FutureBuilder<List<dynamic>>(
-      future: Future.wait<dynamic>([
-        _futureResidences,
-        _futureAds,
-      ]),
+      future: Future.wait<dynamic>([_futureResidences, _futureAds]),
       builder: (context, snapshot) {
         final List<Residence> residences = snapshot.hasData
             ? _uniqueById<Residence>(
@@ -902,15 +644,14 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildSectionHeader(
               eyebrow: 'Sélection',
               title: 'Résidences du moment',
-              subtitle: 'Des biens mis en avant avec une présentation plus propre.',
+              subtitle:
+                  'Des biens mis en avant avec une présentation plus propre.',
               actionText: 'Voir tout',
               icon: Icons.home_work_rounded,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const ResidencesScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const ResidencesScreen()),
                 );
               },
             ),
@@ -933,9 +674,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const ResidencesScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const ResidencesScreen()),
                   );
                 },
               )
@@ -1027,9 +766,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.10),
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.14),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.14)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1171,11 +908,7 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFEDF3FF),
-            Color(0xFFD9E5FF),
-            Color(0xFFBFD2FF),
-          ],
+          colors: [Color(0xFFEDF3FF), Color(0xFFD9E5FF), Color(0xFFBFD2FF)],
         ),
       ),
       child: Stack(
@@ -1246,8 +979,9 @@ class _HomeScreenState extends State<HomeScreen> {
             .toList();
 
         final List<Artisan> fallback = data.take(3).toList();
-        final List<Artisan> displayed =
-            sponsored.isNotEmpty ? sponsored : fallback;
+        final List<Artisan> displayed = sponsored.isNotEmpty
+            ? sponsored
+            : fallback;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1261,9 +995,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const ArtisansScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const ArtisansScreen()),
                 );
               },
             ),
@@ -1286,9 +1018,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const ArtisansScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const ArtisansScreen()),
                   );
                 },
               )
@@ -1530,7 +1260,10 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               onTap: onTap,
               child: Ink(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 13,
+                ),
                 decoration: BoxDecoration(
                   color: _navy,
                   borderRadius: BorderRadius.circular(16),
@@ -1562,10 +1295,7 @@ class _HomeScreenState extends State<HomeScreen> {
           2,
           (index) => const Padding(
             padding: EdgeInsets.only(bottom: 14),
-            child: _PremiumSkeletonCard(
-              height: 142,
-              hasImage: true,
-            ),
+            child: _PremiumSkeletonCard(height: 142, hasImage: true),
           ),
         ),
       ],
@@ -1578,10 +1308,7 @@ class _HomeScreenState extends State<HomeScreen> {
         3,
         (index) => const Padding(
           padding: EdgeInsets.only(bottom: 14),
-          child: _PremiumSkeletonCard(
-            height: 158,
-            hasImage: true,
-          ),
+          child: _PremiumSkeletonCard(height: 158, hasImage: true),
         ),
       ),
     );
@@ -1671,11 +1398,7 @@ class _PremiumFeaturedSkeletonState extends State<_PremiumFeaturedSkeleton>
     return LinearGradient(
       begin: const Alignment(-1.6, -0.3),
       end: const Alignment(1.6, 0.3),
-      colors: const [
-        Color(0xFFF2F4F7),
-        Color(0xFFFAFBFF),
-        Color(0xFFEDEFF5),
-      ],
+      colors: const [Color(0xFFF2F4F7), Color(0xFFFAFBFF), Color(0xFFEDEFF5)],
       stops: const [0.1, 0.45, 0.9],
       transform: _SlidingGradientTransform(_controller.value),
     );
@@ -1735,10 +1458,7 @@ class _PremiumSkeletonCard extends StatefulWidget {
   final double height;
   final bool hasImage;
 
-  const _PremiumSkeletonCard({
-    required this.height,
-    this.hasImage = false,
-  });
+  const _PremiumSkeletonCard({required this.height, this.hasImage = false});
 
   @override
   State<_PremiumSkeletonCard> createState() => _PremiumSkeletonCardState();
@@ -1767,11 +1487,7 @@ class _PremiumSkeletonCardState extends State<_PremiumSkeletonCard>
     return LinearGradient(
       begin: const Alignment(-1.6, -0.3),
       end: const Alignment(1.6, 0.3),
-      colors: const [
-        Color(0xFFF2F4F7),
-        Color(0xFFFAFBFF),
-        Color(0xFFEDEFF5),
-      ],
+      colors: const [Color(0xFFF2F4F7), Color(0xFFFAFBFF), Color(0xFFEDEFF5)],
       stops: const [0.1, 0.45, 0.9],
       transform: _SlidingGradientTransform(_controller.value),
     );
@@ -1883,11 +1599,7 @@ class _PremiumAdSkeletonState extends State<_PremiumAdSkeleton>
     return LinearGradient(
       begin: const Alignment(-1.4, -0.2),
       end: const Alignment(1.4, 0.2),
-      colors: const [
-        Color(0xFFF2F4F7),
-        Color(0xFFFAFBFF),
-        Color(0xFFEDEFF5),
-      ],
+      colors: const [Color(0xFFF2F4F7), Color(0xFFFAFBFF), Color(0xFFEDEFF5)],
       stops: const [0.1, 0.45, 0.9],
       transform: _SlidingGradientTransform(_controller.value),
     );

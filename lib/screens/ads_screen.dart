@@ -4,8 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 class AdsScreen extends StatelessWidget {
   const AdsScreen({super.key});
 
-  // Remplace par ton vrai numéro WhatsApp
-  // Format : 225XXXXXXXXXX (sans +, sans espaces)
+  // Numéro WhatsApp au format international :
+  // 225XXXXXXXXXX, sans + et sans espaces.
   static const String _whatsAppNumber = '2250797472216';
 
   Future<void> _openWhatsApp(
@@ -66,9 +66,9 @@ class AdsScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Row(
             children: [
               Icon(
@@ -118,16 +118,25 @@ class AdsScreen extends StatelessWidget {
     required String label,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFFF2F5FF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE1E7FF)),
+        border: Border.all(
+          color: const Color(0xFFE1E7FF),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF2C55D8)),
+          Icon(
+            icon,
+            size: 18,
+            color: const Color(0xFF2C55D8),
+          ),
           const SizedBox(width: 8),
           Text(
             label,
@@ -215,6 +224,7 @@ class AdsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+
           ...bullets.map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -245,18 +255,24 @@ class AdsScreen extends StatelessWidget {
               ),
             ),
           ),
+
           const SizedBox(height: 10),
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: onPressed,
-              icon: const Icon(Icons.chat_rounded),
+              icon: const Icon(
+                Icons.chat_rounded,
+              ),
               label: Text(buttonText),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF25D366),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -279,7 +295,9 @@ class AdsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFFED7AA)),
+        border: Border.all(
+          color: const Color(0xFFFED7AA),
+        ),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,12 +331,19 @@ class AdsScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTopCard(),
+
               const SizedBox(height: 18),
+
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -333,7 +358,9 @@ class AdsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(height: 20),
+
               _buildActionCard(
                 context: context,
                 badge: 'ARTISAN',
@@ -357,7 +384,9 @@ class AdsScreen extends StatelessWidget {
                   );
                 },
               ),
+
               const SizedBox(height: 16),
+
               _buildActionCard(
                 context: context,
                 badge: 'PROPRIÉTAIRE',
@@ -368,8 +397,8 @@ class AdsScreen extends StatelessWidget {
                 iconBackground: const Color(0xFFFFF4E8),
                 iconColor: const Color(0xFFB45309),
                 bullets: const [
-                  'Offre Standard : 5 000 FCFA / mois',
-                  'Offre Premium : 10 000 FCFA / mois',
+                  'Offre Standard : 2 000 FCFA / mois',
+                  'Offre Premium : 2 500 FCFA / mois',
                   'Création et envoi de vos identifiants de connexion',
                 ],
                 buttonText: 'Publier via WhatsApp',
@@ -377,11 +406,13 @@ class AdsScreen extends StatelessWidget {
                   _openWhatsApp(
                     context,
                     message:
-                        'Bonjour, je souhaite publier ma résidence sur CI Résidences. Merci de m’indiquer les étapes, les offres Standard et Premium, ainsi que le mode de paiement.',
+                        'Bonjour, je souhaite publier ma résidence sur CI Résidences. Je souhaite connaître les modalités de l’offre Standard à 2 000 FCFA par mois et de l’offre Premium à 2 500 FCFA par mois, ainsi que le mode de paiement.',
                   );
                 },
               ),
+
               const SizedBox(height: 16),
+
               _buildBottomNote(),
             ],
           ),
